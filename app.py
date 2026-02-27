@@ -40,7 +40,7 @@ if foto:
                     img = Image.open(foto)
                     
                     # TADY JE TA OPRAVA: Vynutíme model bez prefixu 'models/' a verzi flash
-                    model = genai.GenerativeModel('gemini-1.5-flash-latest')
+                    model = genai.GenerativeModel('gemini-1.5-flash')
                     
                     prompt = """Jsi expert na faktury. Najdi v tabulce SYMBOL a CENU (za kus nebo celkem bez DPH). 
                     Odpověz POUZE jako JSON seznam objektů, nic jiného. 
