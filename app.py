@@ -4,8 +4,8 @@ import requests
 import json
 import base64
 
-st.set_page_config(page_title="Párování Gemini", layout="wide")
-st.title("📸 Stabilní režim párování")
+st.set_page_config(page_title="Párování Gemini 2.5", layout="wide")
+st.title("🚀 Párování s Gemini 2.5 Flash")
 
 # Načtení klíče
 if "GEMINI_API_KEY" not in st.secrets:
@@ -31,12 +31,12 @@ if foto:
         if df_ciselnik is None:
             st.error("Nejdřív nahraj Excel!")
         else:
-            with st.spinner("AI právě luští fakturu..."):
+            with st.spinner("Gemini 2.5 Flash právě luští fakturu..."):
                 try:
                     base_64_image = base64.b64encode(foto.read()).decode('utf-8')
                     
-                    # UNIVERZÁLNÍ URL - toto označení funguje vždy, když je klíč aktivní
-                    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key={api_key}"
+                    # TADY JE TA OPRAVA - název přímo z tvého seznamu
+                    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={api_key}"
                     
                     payload = {
                         "contents": [{
@@ -55,22 +55,17 @@ if foto:
                         clean_json = odpoved_text.replace("```json", "").replace("```", "").strip()
                         
                         data_f = pd.DataFrame(json.loads(clean_json))
-                        sl_A = df_ciselnik.columns[0]
-                        sl_B = df_ciselnik.columns[1]
                         
+                        # Párování
+                        sl_A = df_ciselnik.columns[0]
                         data_f['Symbol'] = data_f['Symbol'].astype(str).str.strip()
                         df_ciselnik[sl_A] = df_ciselnik[sl_A].astype(str).str.strip()
                         
                         final = pd.merge(data_f, df_ciselnik, left_on='Symbol', right_on=sl_A, how='left')
-                        st.success("KONEČNĚ! Data spárována.")
+                        
+                        st.success("HOTOVO! Gemini 2.5 Flash to zvládl.")
                         st.data_editor(final, use_container_width=True)
                     else:
-                        # Pokud to zase hodí 404, vypíšeme SEZNAM dostupných modelů přímo pro tvůj klíč!
                         st.error(f"Chyba: {vysledek.get('error', {}).get('message', 'Neznámá chyba')}")
-                        st.info("Zkouším zjistit, jaké modely tvůj klíč vlastně vidí...")
-                        list_url = f"https://generativelanguage.googleapis.com/v1/models?key={api_key}"
-                        list_res = requests.get(list_url).json()
-                        st.write("Tvoje dostupné modely:", list_res)
-                        
                 except Exception as e:
                     st.error(f"Chyba: {e}")
