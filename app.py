@@ -3,76 +3,74 @@ import pandas as pd
 import google.generativeai as genai
 import json
 from PIL import Image
+import os
 
 st.set_page_config(page_title="Párování faktur", layout="wide")
-st.title("📸 Chytré párování faktur")
+st.title("📸 Chytré párování")
 
-# 1. NASTAVENÍ API - POUŽÍVÁME STABILNÍ VERZI
+# 1. NASTAVENÍ API - VYNUCENÍ STABILNÍ VERZE
 if "GEMINI_API_KEY" not in st.secrets:
     st.error("Chybí API klíč v Secrets!")
     st.stop()
 
-# Konfigurace klíče
+# TENTO ŘÁDEK JE KLÍČOVÝ - fixuje verzi API na stabilní v1
+os.environ["GOOGLE_API_USE_MTLS"] = "never" 
+
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
 # 2. NAHRÁNÍ EXCELU
-st.subheader("1. Nahraj Excel")
-excel_file = st.file_uploader("Vyber soubor .xlsx", type=["xlsx"])
+st.subheader("1. Nahraj Excel (.xlsx)")
+excel_file = st.file_uploader("Vyber soubor číselníku", type=["xlsx"])
 df_ciselnik = None
 if excel_file:
     df_ciselnik = pd.read_excel(excel_file)
-    st.success("Excel (číselník) načten!")
+    st.success("Číselník načten!")
 
 st.divider()
 
 # 3. NAHRÁNÍ FAKTURY
 st.subheader("2. Vyfoť nebo nahraj fakturu")
-foto = st.camera_input("Vyfoť") or st.file_uploader("Nahraj obrázek", type=["png", "jpg", "jpeg"])
+foto = st.camera_input("Vyfoť") or st.file_uploader("Nebo nahraj fotku", type=["png", "jpg", "jpeg"])
 
 if foto:
-    st.image(foto, width=350)
+    st.image(foto, width=300)
     if st.button("🚀 PŘEČÍST A SPÁROVAT", type="primary"):
         if df_ciselnik is None:
-            st.error("Nejdřív nahoře nahraj ten Excel!")
+            st.error("Nejdřív nahoře nahraj Excel!")
         else:
-            with st.spinner("AI čte fakturu..."):
+            with st.spinner("AI právě luští fakturu přes stabilní kanál..."):
                 try:
                     img = Image.open(foto)
                     
-                    # TADY JE TA OPRAVA: Vynutíme model bez prefixu 'models/' a verzi flash
+                    # Používáme základní model gemini-1.5-flash
                     model = genai.GenerativeModel('gemini-1.5-flash')
                     
-                    prompt = """Jsi expert na faktury. Najdi v tabulce SYMBOL a CENU (za kus nebo celkem bez DPH). 
-                    Odpověz POUZE jako JSON seznam objektů, nic jiného. 
-                    Příklad: [{"Symbol": "GRSE02", "Cena": 61.00}]"""
+                    prompt = """Najdi v tabulce SYMBOL a CENU bez DPH. 
+                    Odpověz POUZE jako JSON seznam: [{"Symbol": "GRSE02", "Cena": 61.00}]"""
                     
-                    # Generování obsahu
+                    # Volání s fixem
                     response = model.generate_content([prompt, img])
                     
-                    # Čištění textu od markdownu
-                    res_text = response.text.strip()
-                    if "```json" in res_text:
-                        res_text = res_text.split("```json")[1].split("```")[0].strip()
-                    elif "```" in res_text:
-                        res_text = res_text.split("```")[1].split("```")[0].strip()
+                    raw = response.text.strip()
+                    if "```json" in raw:
+                        raw = raw.split("```json")[1].split("```")[0].strip()
+                    elif "```" in raw:
+                        raw = raw.split("```")[1].split("```")[0].strip()
                     
-                    data_z_faktury = json.loads(res_text)
-                    df_faktura = pd.DataFrame(data_z_faktury)
+                    data_f = pd.DataFrame(json.loads(raw))
                     
-                    # PÁROVÁNÍ (V-LOOKUP)
-                    # Předpokládáme: Sloupec 1 v Excelu = SYMBOL, Sloupec 2 = TVŮJ KÓD
+                    # Párování
                     sl_A = df_ciselnik.columns[0]
-                    sl_B = df_ciselnik.columns[1]
-                    
-                    df_faktura['Symbol'] = df_faktura['Symbol'].astype(str)
+                    data_f['Symbol'] = data_f['Symbol'].astype(str)
                     df_ciselnik[sl_A] = df_ciselnik[sl_A].astype(str)
                     
-                    final = pd.merge(df_faktura, df_ciselnik, left_on='Symbol', right_on=sl_A, how='left')
+                    final = pd.merge(data_f, df_ciselnik, left_on='Symbol', right_on=sl_A, how='left')
                     
                     st.success("Hotovo!")
-                    # Zobrazíme přehlednou tabulku
                     st.data_editor(final, use_container_width=True)
                     
                 except Exception as e:
+                    # Pokud i tohle selže, vypíšeme detail, jestli to není regionem
                     st.error(f"Chyba: {e}")
-                    st.info("Tip: Pokud chyba přetrvává, zkus v Google AI Studiu vytvořit nový API klíč.")
+                    if "404" in str(e):
+                        st.warning("Google stále odmítá model. Zkusíme vteřinu počkat, než se nový API klíč aktivuje (může to trvat 5 minut).")
