@@ -8,10 +8,10 @@ st.set_page_config(page_title="Zpracování faktur", layout="wide")
 st.title("📸 Chytré párování faktur s AI")
 
 try:
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+  genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 except Exception as e:
-st.error("Chybí API klíč! Zkontroluj nastavení Secrets ve Streamlitu.")
-st.stop()
+  st.error("Chybí API klíč! Zkontroluj nastavení Secrets ve Streamlitu.")
+  st.stop()
 
 st.subheader("1. Nahraj svůj číselník (Excel)")
 excel_file = st.file_uploader("Vyber soubor .xlsx (Sloupec A = z faktury, Sloupec B = tvůj kód)", type=["xlsx"])
