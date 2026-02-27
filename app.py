@@ -28,10 +28,10 @@ tab1, tab2 = st.tabs(["📷 Vyfotit mobilem", "📁 Nahrát z PC"])
 
 foto = None
 with tab1:
-foto_cam = st.camera_input("Vyfoť fakturu zde")
+  foto_cam = st.camera_input("Vyfoť fakturu zde")
 if foto_cam: foto = foto_cam
 with tab2:
-foto_up = st.file_uploader("Nebo nahraj fotku", type=["png", "jpg", "jpeg"])
+  foto_up = st.file_uploader("Nebo nahraj fotku", type=["png", "jpg", "jpeg"])
 if foto_up: foto = foto_up
 
 if foto:
