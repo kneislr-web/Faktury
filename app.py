@@ -35,4 +35,4 @@ with tab2:
 if foto_up: foto = foto_up
 
 if foto:
-st.image(foto, caption="Tuhle fakturu jdeme číst", width=400)
+  st.image(foto, caption="Tuhle fakturu jdeme číst", width=400)
