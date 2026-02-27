@@ -44,7 +44,7 @@ else:
     with st.spinner("Umělá inteligence teď luští fakturu... Může to trvat 10-20 vteřin..."):
         try:
             img = Image.open(foto)
-            model = genai.GenerativeModel('models/gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
             prompt = """
             Jsi expert na čtení faktur. Najdi na obrázku tabulku s položkami.
