@@ -39,9 +39,9 @@ if foto:
 
 if st.button("🚀 Přečíst fakturu a spárovat s Excelem", type="primary"):
   if df_ciselnik is None:
-  st.warning("Nejdřív nahoře nahraj svůj Excel (číselník), abych měl data s čím spárovat!")
+    st.warning("Nejdřív nahoře nahraj svůj Excel (číselník), abych měl data s čím spárovat!")
 else:
-with st.spinner("Umělá inteligence teď luští fakturu... Může to trvat 10-20 vteřin..."):
+  with st.spinner("Umělá inteligence teď luští fakturu... Může to trvat 10-20 vteřin..."):
 try:
   img = Image.open(foto)
   model = genai.GenerativeModel('gemini-1.5-flash')
