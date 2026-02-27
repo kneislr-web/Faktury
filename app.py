@@ -46,21 +46,21 @@ else:
       img = Image.open(foto)
       model = genai.GenerativeModel('gemini-1.5-flash')
 
-prompt = """
-Jsi expert na čtení faktur. Najdi na obrázku tabulku s položkami.
-Pro každou položku najdi:
-1. 'Symbol' (např. kód jako GRSE02, často ve sloupci Symbol nebo Kód).
-2. 'Cenu' (cena bez DPH nebo částka za položku).
+      prompt = """
+      Jsi expert na čtení faktur. Najdi na obrázku tabulku s položkami.
+      Pro každou položku najdi:
+      1. 'Symbol' (např. kód jako GRSE02, často ve sloupci Symbol nebo Kód).
+      2. 'Cenu' (cena bez DPH nebo částka za položku).
 
-Odpověz POUZE v čistém formátu JSON jako seznam objektů. Nepiš žádný text okolo.
-Příklad:
-[
-{"Symbol": "GRSE02", "Cena": "61.00"}
-]
-"""
+      Odpověz POUZE v čistém formátu JSON jako seznam objektů. Nepiš žádný text okolo.
+      Příklad:
+      [
+      {"Symbol": "GRSE02", "Cena": "61.00"}
+      ]
+      """
 
-response = model.generate_content([prompt, img])
-vysledek_text = response.text.strip()
+      response = model.generate_content([prompt, img])
+      vysledek_text = response.text.strip()
 
 if vysledek_text.startswith("```json"):
   vysledek_text = vysledek_text[7:-3].strip()
