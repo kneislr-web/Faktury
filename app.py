@@ -18,7 +18,7 @@ excel_file = st.file_uploader("Vyber soubor .xlsx (Sloupec A = z faktury, Sloupe
 
 df_ciselnik = None
 if excel_file:
-df_ciselnik = pd.read_excel(excel_file)
+  df_ciselnik = pd.read_excel(excel_file)
 st.success("Číselník načten! Můžeš fotit.")
 
 st.divider()
